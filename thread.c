@@ -467,8 +467,15 @@ init_thread (struct thread *t, const char *name, int priority)
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
+  sema_init(&t->my_semaphore_t, 0); /* Initialize timer_sema with false. Used as a binary semaphore. * //ADDED */
 }
 
+bool less_wakeup (const struct list_elem *left, const struct list_elem *right, void *aux UNUSED)
+{
+	const struct thread *tleft = list_entry (left, struct thread, list_for_all_timers);
+	const struct thread *tright = list_entry (right, struct thread, list_for_all_timers);
+	return tleft->awake_thread < tright->awake_thread;
+}
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
    returns a pointer to the frame's base. */
 static void *
@@ -578,18 +585,6 @@ allocate_tid (void)
 
   return tid;
 }
-
-//add
-
-bool less_ticks_thread(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
-{
-
-  struct thread *pta = list_entry (a, struct thread, elem);
-  struct thread *ptb = list_entry (b, struct thread, elem);
-  return pta->total_ticks < ptb->total_ticks;
-}
-
-
 
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */

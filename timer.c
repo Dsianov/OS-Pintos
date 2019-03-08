@@ -19,10 +19,7 @@
 
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
-
-//             add                    //
-struct list sleeping_list_thread;
-
+static struct list timer_wait_list;
 
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
@@ -34,8 +31,6 @@ static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
-
-
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -43,10 +38,7 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
-  
-//             add                    //
-  list_init (&sleeping_list_thread);
-  
+  list_init(&timer_wait_list);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -99,28 +91,21 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t t = ticks;
-  int64_t start = timer_ticks ();
-  
-  ASSERT (intr_get_level () == INTR_ON);
-  
-  
-  if (ticks <= 0){
-    return;
-  }
-    
-  enum intr_level old_level = intr_disable ();
-  
-  
-  thread_current()->total_ticks = t + start;
-  
-  //since in list_insert_ordered has a parnter list_less_func which is a pointer to a function, we create a function less_ticks_thread and pass it.
-  list_insert_ordered (&sleeping_list_thread, &thread_current()->elem, less_ticks_thread, NULL);
-  
-  thread_block();
-  
-  old_level = intr_set_level (old_level);
-     
+	if (ticks > 0)
+	{
+		int64_t elapsed_time = timer_ticks();
+		struct thread *my_thread = thread_current();
+
+		if (elapsed_time > 0)
+		{
+			my_thread->awake_thread = elapsed_time + ticks;
+			ASSERT(intr_get_level() == INTR_ON);
+			intr_disable();
+			list_insert_ordered(&timer_wait_list, &my_thread->list_for_all_timers, less_wakeup, NULL);
+			intr_enable();
+			sema_down(&my_thread->my_semaphore_t);
+		}
+	}
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -197,8 +182,23 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+  struct thread *t;
   ticks++;
   thread_tick ();
+  enum intr_level old_level = intr_disable();
+  while (!list_empty(&timer_wait_list))
+  {
+	  t = list_entry(list_front(&timer_wait_list), struct thread, list_for_all_timers);
+
+	  /* Since the list is ordered, the first element is the earliest
+	  to wake up. If it must wait, all others must wait. */
+	  if (ticks < t->awake_thread)
+		  break;
+
+	  sema_up(&t->my_semaphore_t);
+	  list_pop_front(&timer_wait_list);
+  }
+  intr_set_level(old_level);
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
