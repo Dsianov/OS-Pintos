@@ -122,7 +122,7 @@ thread_start (void)
 void
 thread_tick (void) 
 {
-  struct thread *t = thread_current ();
+  struct thread *t = thread_current();
 
   /* Update statistics. */
   if (t == idle_thread)
@@ -237,9 +237,45 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
-  t->status = THREAD_READY;
+  //list_push_back (&ready_list, &t->elem);
+  list_insert_ordered(&ready_list, &t->elem, higher_priority, NULL);
+  struct thread *current = thread_current();
+
+  if (current != idle_thread)
+  {
+	  if (t->priority > current->priority)
+	  {
+		  if (intr_context() == true)
+		  {
+			  t->status = THREAD_READY;
+			  intr_yield_on_return();
+
+		  }
+		  else
+		  {
+			  t->status = THREAD_READY;
+			  thread_yield();
+			  return;
+		  }
+	  }
+	  else
+	  {
+		  t->status = THREAD_READY;
+		  intr_set_level(old_level);
+		  return;
+
+	  }
+  }
+  else
+  {
+	  t->status = THREAD_READY;
+	  intr_set_level(old_level);
+	  return;
+  }
+		  
   intr_set_level (old_level);
+  return;
+
 }
 
 /* Returns the name of the running thread. */
@@ -308,7 +344,7 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-    list_push_back (&ready_list, &cur->elem);
+    list_insert_ordered (&ready_list, &cur->elem, higher_priority, NULL);
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -335,7 +371,11 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
+
+	bool swap = true;
+	thread_current ()->priority = new_priority;
+	(list_entry(list_front(&ready_list), struct thread, elem)->priority) <= new_priority ? swap = false : thread_yield();
+	if (swap == false) return;
 }
 
 /* Returns the current thread's priority. */
@@ -470,12 +510,22 @@ init_thread (struct thread *t, const char *name, int priority)
   sema_init(&t->my_semaphore_t, 0); /* Initialize timer_sema with false. Used as a binary semaphore. * //ADDED */
 }
 
-bool less_wakeup (const struct list_elem *left, const struct list_elem *right, void *aux UNUSED)
+bool less_wakeup (struct list_elem *arg1, struct list_elem *arg2)
 {
-	const struct thread *tleft = list_entry (left, struct thread, list_for_all_timers);
-	const struct thread *tright = list_entry (right, struct thread, list_for_all_timers);
-	return tleft->awake_thread < tright->awake_thread;
+	return ((list_entry(arg1, struct thread, list_for_all_timers))->awake_thread < (list_entry(arg2, struct thread, list_for_all_timers))->awake_thread);
 }
+bool higher_priority(struct list_elem *arg1, struct list_elem *arg2) //more_wakeup_prio
+{
+	return ((list_entry(arg1, struct thread, elem))->awake_thread > (list_entry(arg2, struct thread, elem))->awake_thread);
+}
+
+bool lower_priority(struct list_elem *arg1, struct list_elem *arg2)
+{
+	return ((list_entry(arg1, struct thread, list_for_all_timers))->awake_thread == (list_entry(arg2, struct thread, list_for_all_timers))->awake_thread) ?
+		(list_entry(arg1, struct thread, list_for_all_timers))->awake_thread > (list_entry(arg2, struct thread, list_for_all_timers)) :
+		(list_entry(arg1, struct thread, list_for_all_timers))->awake_thread < (list_entry(arg2, struct thread, list_for_all_timers));
+}
+
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
    returns a pointer to the frame's base. */
 static void *

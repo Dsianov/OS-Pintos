@@ -142,6 +142,8 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
-bool less_wakeup(const struct list_elem *left, const struct list_elem *right, void *aux UNUSED); //ADDED
+bool less_wakeup(struct list_elem *arg1, struct list_elem *arg2); //ADDED
+bool lower_priority(struct list_elem *arg1, struct list_elem *arg2);
+bool higher_priority(struct list_elem *arg1, struct list_elem *arg2);
 
 #endif /* threads/thread.h */
