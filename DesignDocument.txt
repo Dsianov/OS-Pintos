@@ -148,9 +148,14 @@ the quarter.
 
 >> In your opinion, was this assignment, or any one of the three problems
 >> in it, too easy or too hard?  Did it take too long or too little time?
+Chris - While I found the assignment fair and thought the given amount of time was fair, I think that it's
+easy to underestimate the amount of work required for it because it's only 10% of the grade, so naturally you might
+think it's not a lot of work, when it really is. In the future, I would cut the last homework or something and have the focus 
+be on the project.
 
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
+Yes
 
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
