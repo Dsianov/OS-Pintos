@@ -8,7 +8,7 @@
 
 >> Fill in the names and email addresses of your group members.
 
-Basit Sheikh <email@domain.example>
+Basit Sheikh bsheikh@uci.edu
 David Sianov <email@domain.example>
 Christopher Welde cwelde@uci.edu
 
@@ -152,6 +152,7 @@ Chris - While I found the assignment fair and thought the given amount of time w
 easy to underestimate the amount of work required for it because it's only 10% of the grade, so naturally you might
 think it's not a lot of work, when it really is. In the future, I would cut the last homework or something and have the focus 
 be on the project.
+Basit - The idea behind the assignment is good, and it relates to the class. However, there was very little guidance and as such it was difficult to figure out to connect all the moving parts. We understood how to implement prioritization and such theoretically, but applying it to this existing base was difficult and tedious. 
 
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
@@ -160,8 +161,10 @@ Yes
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
 >> find any of our guidance to be misleading?
+Basit - It was hard to find answers to questions that we had, particularly because of the large scale of the project. If the project was scaled down to an individualized programming project it would be much easier to get feedback and guidance from the TAs.
 
 >> Do you have any suggestions for the TAs to more effectively assist
 >> students, either for future quarters or the remaining projects?
+Basit - I think that instead of giving an entire existing code base to work with, it should be a project where the users can create their own threads and their own queue and mantain stuff like that. It was difficult to work with the existing code.
 
 >> Any other comments?
