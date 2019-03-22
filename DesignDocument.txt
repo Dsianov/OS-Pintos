@@ -101,6 +101,26 @@ We chose this design because it felt like it covered all of the edge cases. We h
 >> B3: How do you ensure that the highest priority thread waiting for
 >> a lock, semaphore, or condition variable wakes up first?
 
+We created 2 functions:
+
+bool lower_priority(struct list_elem *arg1, struct list_elem *arg2);
+bool higher_priority(struct list_elem *arg1, struct list_elem *arg2
+
+The first function lower_priority compares two list's and if the first has a lower priority than the second, return true.
+
+The second function higher_priority does the opposite and returns true when arg1 has a higher priority than arg2.
+
+Inside the thread unblock function, we call llist_insert_ordered and pass higher_priority as the function p;ointer.
+
+We then create a pointer ot the current thread, and if that is not idle,and if that has a less priority than the thread passed into the function, we yield the thread with thread_yield() and return.
+
+Otherwise, we return.
+
+In thread_set_priority, we yield if necessary after comparing the priority of the element in the front of the list with the new priority that is passed in.
+
+
+
+
 >> B4: Describe the sequence of events when a call to lock_acquire()
 >> causes a priority donation.  How is nested donation handled?
 
