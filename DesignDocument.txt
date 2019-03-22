@@ -30,10 +30,36 @@ Christopher Welde cwelde@uci.edu
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+I added a linked list structure to hold all of the timers to each thread : struct list_elem list_for_all_timers;
+
+I added a semaphore to the thread struct to make sure no race conditions can occur just in case: struct semaphore my_semaphore_t
+
+I added an integer to the thread struct to keep track of what time the thread should wake up, which is the current time + ticks: int64_t awake_thread; 
+
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe what happens in a call to timer_sleep(),
 >> including the effects of the timer interrupt handler.
+
+Timer sleep first check if the ticks passed in is a positive non-zero number. If it is not, it returns.
+
+Then, it calculates the elapsed time by calling timer_ticks()
+
+It creates a pointer to a thread which points to the current active thread (retrieved using thread_current()).
+
+Then it checks if the elapsed time is > 0, if it is not, it returns.
+
+It sets the thread's wake up time to whatever the elapsed time is plus the ticks.
+
+Then it puts the thread into a list in order, using list_insert_ordered and unlocks the lock.
+
+In the interrupt handler, we increase the ticks and then while the list is not empty, we loop..
+
+In each iteration, we create a pointer to a thread which points to the front of the list of threads.
+
+We check if the ticks is less than the time it needs to be woken up, and if it is we exit the function.
+
+If it is not, we lock the semaphore and pop the first node of threads from the list of threads.
 
 >> A3: What steps are taken to minimize the amount of time spent in
 >> the timer interrupt handler?
@@ -43,13 +69,19 @@ Christopher Welde cwelde@uci.edu
 >> A4: How are race conditions avoided when multiple threads call
 >> timer_sleep() simultaneously?
 
+We insert something into the list in order, then lock the thread right before popping something from the list in the interrupt handler. So we lock inside of the timer_interrupt, and then we do not unlock the thread until we return to the end of timer_sleep. This means only one thread can enter the critical section at a time and be compared/removed from the list.
+
 >> A5: How are race conditions avoided when a timer interrupt occurs
 >> during a call to timer_sleep()?
+
+We have a semapahore which we lock inside of the interrupt handler, and is not unlocked until we return to timer_sleep. This means only one interrupt can be handled at a time.
 
 ---- RATIONALE ----
 
 >> A6: Why did you choose this design?  In what ways is it superior to
 >> another design you considered?
+
+We chose this design because it felt like it covered all of the edge cases. We handle the case were multiple threads try to access the data and modify it, and we also handled the case where multiple interrupts occur. Without discarding them, we used the semaphore to restrict access to only one at a time for the important part which involves comparing/removing things from the list.
 
 			 PRIORITY SCHEDULING
 			 ===================
