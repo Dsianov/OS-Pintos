@@ -263,12 +263,20 @@ running time. Because if not, a consequence will be that our CPU cores may suffe
 >> time to work on this part of the project, how might you choose to
 >> refine or improve your design?
 
+If we had more time to figure out how to get this working, I would approach it differently and instead try to utilize the ready_list that is already provided. A couple of things I would focus on would be
+
+(A) Prevent starvation by some other technique, such as round robin integrated into the priority donation where if you give priority to a low process, it does not get to completely execute because it may take up a lot of time even though it isn't that important.
+
+(B) Add helper functions to help print and debug outputs to understand everything better.
+
 >> C6: The assignment explains arithmetic for fixed-point math in
 >> detail, but it leaves it open to you to implement it.  Why did you
 >> decide to implement it the way you did?  If you created an
 >> abstraction layer for fixed-point math, that is, an abstract data
 >> type and/or a set of functions or macros to manipulate fixed-point
 >> numbers, why did you do so?  If not, why not?
+
+We did not reach this part of the project, so we cannot comment on it.
 
 			   SURVEY QUESTIONS
 			   ================
