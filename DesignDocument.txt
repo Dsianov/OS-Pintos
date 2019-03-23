@@ -45,7 +45,7 @@ I added an integer to the thread struct to keep track of what time the thread sh
 >> A2: Briefly describe what happens in a call to timer_sleep(),
 >> including the effects of the timer interrupt handler.
 
-Timer sleep first check if the ticks passed in is a positive non-zero number. If it is not, it returns.
+Timer sleep first checks if the ticks passed in is a positive non-zero number. If it is not, it returns.
 
 Then, it calculates the elapsed time by calling timer_ticks()
 
@@ -68,6 +68,18 @@ If it is not, we lock the semaphore and pop the first node of threads from the l
 >> A3: What steps are taken to minimize the amount of time spent in
 >> the timer interrupt handler?
 
+we use list_insert_ordered. In list_insert_ordered,
+
+the order in the list is sorted by awake_thread(=>Thread wakeup time in ticks)
+
+In this way, we can check the list from the beginning, and stop whenever the 
+
+sleep_ticks is larger than the current ticks, which guarantees the later 
+
+threads in the sleep list don’t need to be checked. Overall, useing sort list 
+
+minimizes the time spent.
+
 ---- SYNCHRONIZATION ----
 
 >> A4: How are race conditions avoided when multiple threads call
@@ -85,7 +97,7 @@ We have a semapahore which we lock inside of the interrupt handler, and is not u
 >> A6: Why did you choose this design?  In what ways is it superior to
 >> another design you considered?
 
-We chose this design because it felt like it covered all of the edge cases. We handle the case were multiple threads try to access the data and modify it, and we also handled the case where multiple interrupts occur. Without discarding them, we used the semaphore to restrict access to only one at a time for the important part which involves comparing/removing things from the list.
+We chose this design because it felt like it covered all of the edge cases. We handle the case were multiple threads try to access the data and modify it, and we also handled the case where multiple interrupts occur. Without discarding them, we used the semaphore to restrict access to only one at a time for the important part which involves comparing/removing things from the list. Moreover, if we disable interrupt in every sychroniztion step we acually lose the idea of multi-threading because when interrupt is disable only one thread can run, and in this case there is no any preemption.     
 
 			 PRIORITY SCHEDULING
 			 ===================
