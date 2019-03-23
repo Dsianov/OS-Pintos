@@ -228,26 +228,33 @@ In the end, we couldn't get the donation part working unfortunately.
 >> scheduling decision and the priority and recent_cpu values for each
 >> thread after each given number of timer ticks:
 
-timer  recent_cpu    priority   thread
-ticks   A   B   C   A   B   C   to run
------  --  --  --  --  --  --   ------
- 0
- 4
- 8
-12
-16
-20
-24
-28
-32
-36
+timer |     recent_cpu      |        priority         |  thread
+ticks   A   	B   	C   	A   	B   	C   	 to run
+-----  --  	--  	--  	--  	--  	--   	------
+ 0	0	1	2	63	61	59	A
+ 4	4	1	2	62	61	59	A
+ 8	7	2	4	61	61	58	B
+12	6	6	6	61	59	58	A
+16	9	6	7	60	59	57	A
+20	12	6	8	60	59	57	A
+24	15	6	9	59	59	57	B
+28	14	10	10	59	58	57	A
+32	16	10	11	58	58	56	B
+36	15	14	12	59	57	56	A
 
 >> C3: Did any ambiguities in the scheduler specification make values
 >> in the table uncertain?  If so, what rule did you use to resolve
 >> them?  Does this match the behavior of your scheduler?
 
+Yes. The ambiguity is the length of a timer tick interval. here, it is in multiples of four. However, that
+wasn't specified elsewhere. We did not get to implement this part.
+
 >> C4: How is the way you divided the cost of scheduling between code
 >> inside and outside interrupt context likely to affect performance?
+
+It's possible that the CPU spends more time context switching than actually executing the thread.
+It's important to not waste too much time switching stuff around and to allow threads to get enough
+running time. Because if not, a consequence will be that our CPU cores may suffer and experience low performance.
 
 ---- RATIONALE ----
 
