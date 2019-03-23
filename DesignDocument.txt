@@ -104,64 +104,13 @@ We chose this design because it felt like it covered all of the edge cases. We h
 
 ---- DATA STRUCTURES ----
 
-
 >> B1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
-Our idea was to add an integer for the initial priority for each thread as well as their current priority. We also have a boolean to check if the thread has been donated or not.
-
 >> B2: Explain the data structure used to track priority donation.
 >> Use ASCII art to diagram a nested donation.  (Alternately, submit a
 >> .png file.)
-
-Our idea was to check if the lower priority is holding the lock, and if it is, we can then then "donate" the cpu time from the higher priority to the lower one by modifying the priority temporarily, and then switching it back after. However, every time we attempted to implement this solution it would affect the rest of our test cases and make them fail so we decided to remove them and comment it out. As of now, our solution has priority scheduling but does not include priority donation. We used the provided list struct to implement this.
-
-We also completed thread_set_priority where we adjust the priority to the new value, and yield if necessary. We also completed thread_get_priority which just retrieves the current priority of the thread.
-
-
-Thread 1 has the lock, but thread 3 wants it. However, it is blocked because it has a lower priority.
------------------------------------------------------------------------------------------
-.  Thread 1                  .  Thread 2                  .  Thread 3                   .
-.  Priority 1                .  Priority 10               .  Priority 100               .
-.  Has Lock                  .  No lock                   .  No lock [Request Blocked]  .
------------------------------------------------------------------------------------------
-Now, we implement the donation. Notice the priority of thread 3 is donated to thread 1
------------------------------------------------------------------------------------------
-.  Thread 1                  .  Thread 2                  .  Thread 3                   .
-.  Priority 100              .  Priority 10               .  Priority 100               .
-.  Has Lock                  .  No lock                   .  No lock [Request Blocked]  .
------------------------------------------------------------------------------------------
-Now we can unblock thread 3 ...
------------------------------------------------------------------------------------------
-.  Thread 1                  .  Thread 2                  .  Thread 3                   .
-.  Priority 100              .  Priority 10               .  Priority 100               .
-.  Has Lock                  .  No lock                   .  No Lock                    .
-.  Orig priority: 1 									.
------------------------------------------------------------------------------------------
-And thread 3 acquires the lock...
------------------------------------------------------------------------------------------
-.  Thread 1                  .  Thread 2                  .  Thread 3                   .
-.  Priority 100              .  Priority 10               .  Priority 100               .
-.  No Lock                   .  No lock                   .  Has Lock, Executes         .
-.  Orig priority: 1 									.
------------------------------------------------------------------------------------------
-Now we revert back to original priority for thread 1 and release the lock from thread 3:
------------------------------------------------------------------------------------------
-.  Thread 1                  .  Thread 2                  .  Thread 3                   .
-.  Priority 1                .  Priority 10               .  Priority 100               .
-.  No lock                   .  No lock                   .  No lock		        .
-.  Orig priority: 1 									.
------------------------------------------------------------------------------------------
-Finally, give lock back to thread 1 and continue...
------------------------------------------------------------------------------------------
-.  Thread 1                  .  Thread 2                  .  Thread 3                   .
-.  Priority 1                .  Priority 10               .  Priority 100               .
-.  Has lock                  .  No lock                   .  No lock		        .
-.  Orig priority: 1 									.
------------------------------------------------------------------------------------------
-
-Continue executing.... Thread 3 has executed through priority donation.
 
 ---- ALGORITHMS ----
 
@@ -177,9 +126,9 @@ The first function lower_priority compares two list's and if the first has a low
 
 The second function higher_priority does the opposite and returns true when arg1 has a higher priority than arg2.
 
-Inside the thread unblock function, we call llist_insert_ordered and pass higher_priority as the function p;ointer.
+Inside the thread unblock function, we call llist_insert_ordered and pass higher_priority as the function pointer.
 
-We then create a pointer ot the current thread, and if that is not idle,and if that has a less priority than the thread passed into the function, we yield the thread with thread_yield() and return.
+We then create a pointer to the current thread, and if that is not idle,and if that has a less priority than the thread passed into the function, we yield the thread with thread_yield() and return.
 
 Otherwise, we return.
 
@@ -272,6 +221,7 @@ easy to underestimate the amount of work required for it because it's only 10% o
 think it's not a lot of work, when it really is. In the future, I would cut the last homework or something and have the focus 
 be on the project.
 Basit - The idea behind the assignment is good, and it relates to the class. However, there was very little guidance and as such it was difficult to figure out to connect all the moving parts. We understood how to implement prioritization and such theoretically, but applying it to this existing base was difficult and tedious. 
+David - it think is realy hard project since there is no easy way to debug. 
 
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
