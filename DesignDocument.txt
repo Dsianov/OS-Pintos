@@ -30,6 +30,7 @@ Christopher Welde cwelde@uci.edu
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+struct thread 
 	int64_t awake_thread;                /* Thread wakeup time in ticks. */ //ADDED
 	struct semaphore my_semaphore_t; //ADDED
 	struct list_elem list_for_all_timers;        /* List element for timer_wait_list. */ //ADDED
@@ -220,6 +221,12 @@ In the end, we couldn't get the donation part working unfortunately.
 >> C1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
+
+thread.h
+#define NICE_DEFAULT 0
+
+struct thread
+   int nice; 
 
 ---- ALGORITHMS ----
 
