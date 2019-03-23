@@ -190,10 +190,16 @@ In thread_set_priority, we yield if necessary after comparing the priority of th
 
 >> B4: Describe the sequence of events when a call to lock_acquire()
 >> causes a priority donation.  How is nested donation handled?
-	decrease the sema value by 0
+	check if lock can be acquired
+	if it can be verified, donate
+	nested donation is taken care of
+	and the next highest priority thread is to be ran
+	
 
 >> B5: Describe the sequence of events when lock_release() is called
 >> on a lock that a higher-priority thread is waiting for.
+	lock is removed from the current htread holding the lock, and the thread yields. 
+	It is unblocked and another one is scheduled.
 	increase the sema value by 1
 	if original priority > current priority
 	set higher priority for that thread in lock list
