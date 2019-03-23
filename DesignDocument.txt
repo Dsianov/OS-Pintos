@@ -196,7 +196,7 @@ In thread_set_priority, we yield if necessary after comparing the priority of th
 >> on a lock that a higher-priority thread is waiting for.
 	increase the sema value by 1
 	if original priority > current priority
-	set hight priority for that thread in lock list
+	set higher priority for that thread in lock list
 
 ---- SYNCHRONIZATION ----
 
