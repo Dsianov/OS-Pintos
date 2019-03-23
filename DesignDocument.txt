@@ -9,7 +9,7 @@
 >> Fill in the names and email addresses of your group members.
 
 Basit Sheikh bsheikh@uci.edu
-David Sianov <email@domain.example>
+David Sianov <Dsianov@uci.edu>
 Christopher Welde cwelde@uci.edu
 
 ---- PRELIMINARIES ----
@@ -29,6 +29,10 @@ Christopher Welde cwelde@uci.edu
 >> A1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
+
+	int64_t awake_thread;                /* Thread wakeup time in ticks. */ //ADDED
+	struct semaphore my_semaphore_t; //ADDED
+	struct list_elem list_for_all_timers;        /* List element for timer_wait_list. */ //ADDED
 
 I added a linked list structure to hold all of the timers to each thread : struct list_elem list_for_all_timers;
 
