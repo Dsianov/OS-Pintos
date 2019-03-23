@@ -97,7 +97,7 @@ We have a semapahore which we lock inside of the interrupt handler, and is not u
 >> A6: Why did you choose this design?  In what ways is it superior to
 >> another design you considered?
 
-We chose this design because it felt like it covered all of the edge cases. We handle the case were multiple threads try to access the data and modify it, and we also handled the case where multiple interrupts occur. Without discarding them, we used the semaphore to restrict access to only one at a time for the important part which involves comparing/removing things from the list. Moreover, if we disable interrupt in every sychroniztion step we acually lose the idea of multi-threading because when interrupt is disable only one thread can run, and in this case there is no any preemption.     
+We chose this design because it felt like it covered all of the edge cases. We handle the case were multiple threads try to access the data and modify it, and we also handled the case where multiple interrupts occur. Without discarding them, we used the semaphore to restrict access to only one at a time for the important part which involves comparing/removing things from the list. Moreover, timer is interrpt and if we trun off interrupt, there is no race condtion. Race condition only can modify when interrupt is on. This why we use semapahore so that only one thread uses the share data.     
 
 			 PRIORITY SCHEDULING
 			 ===================
