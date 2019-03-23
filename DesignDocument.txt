@@ -108,9 +108,59 @@ We chose this design because it felt like it covered all of the edge cases. We h
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+Our idea was to add an integer for the initial priority for each thread as well as their current priority. We also have a boolean to check if the thread has been donated or not.
+
 >> B2: Explain the data structure used to track priority donation.
 >> Use ASCII art to diagram a nested donation.  (Alternately, submit a
 >> .png file.)
+
+Our idea was to check if the lower priority is holding the lock, and if it is, we can then then "donate" the cpu time from the higher priority to the lower one by modifying the priority temporarily, and then switching it back after. However, every time we attempted to implement this solution it would affect the rest of our test cases and make them fail so we decided to remove them and comment it out. As of now, our solution has priority scheduling but does not include priority donation. We used the provided list struct to implement this.
+
+We also completed thread_set_priority where we adjust the priority to the new value, and yield if necessary. We also completed thread_get_priority which just retrieves the current priority of the thread.
+
+
+Thread 1 has the lock, but thread 3 wants it. However, it is blocked because it has a lower priority.
+-----------------------------------------------------------------------------------------
+.  Thread 1                  .  Thread 2                  .  Thread 3                   .
+.  Priority 1                .  Priority 10               .  Priority 100               .
+.  Has Lock                  .  No lock                   .  No lock [Request Blocked]  .
+-----------------------------------------------------------------------------------------
+Now, we implement the donation. Notice the priority of thread 3 is donated to thread 1
+-----------------------------------------------------------------------------------------
+.  Thread 1                  .  Thread 2                  .  Thread 3                   .
+.  Priority 100              .  Priority 10               .  Priority 100               .
+.  Has Lock                  .  No lock                   .  No lock [Request Blocked]  .
+-----------------------------------------------------------------------------------------
+Now we can unblock thread 3 ...
+-----------------------------------------------------------------------------------------
+.  Thread 1                  .  Thread 2                  .  Thread 3                   .
+.  Priority 100              .  Priority 10               .  Priority 100               .
+.  Has Lock                  .  No lock                   .  No Lock                    .
+.  Orig priority: 1 									.
+-----------------------------------------------------------------------------------------
+And thread 3 acquires the lock...
+-----------------------------------------------------------------------------------------
+.  Thread 1                  .  Thread 2                  .  Thread 3                   .
+.  Priority 100              .  Priority 10               .  Priority 100               .
+.  No Lock                   .  No lock                   .  Has Lock, Executes         .
+.  Orig priority: 1 									.
+-----------------------------------------------------------------------------------------
+Now we revert back to original priority for thread 1 and release the lock from thread 3:
+-----------------------------------------------------------------------------------------
+.  Thread 1                  .  Thread 2                  .  Thread 3                   .
+.  Priority 1                .  Priority 10               .  Priority 100               .
+.  No lock                   .  No lock                   .  No lock		        .
+.  Orig priority: 1 									.
+-----------------------------------------------------------------------------------------
+Finally, give lock back to thread 1 and continue...
+-----------------------------------------------------------------------------------------
+.  Thread 1                  .  Thread 2                  .  Thread 3                   .
+.  Priority 1                .  Priority 10               .  Priority 100               .
+.  Has lock                  .  No lock                   .  No lock		        .
+.  Orig priority: 1 									.
+-----------------------------------------------------------------------------------------
+
+Continue executing.... Thread 3 has executed through priority donation.
 
 ---- ALGORITHMS ----
 
@@ -149,10 +199,18 @@ In thread_set_priority, we yield if necessary after comparing the priority of th
 >> how your implementation avoids it.  Can you use a lock to avoid
 >> this race?
 
+A potential race would be if multiple threads call thread_set_priority. In this case, theree will be a data race and they may change the value of the priority being assigned and assign the wrong one to each thread. To avoid this, you can use a simple mutex lock or sempahore so that the critical section where it is assigned is atomically executed.
+
+Our idea of doing this was to have the caller function lock and unlock, and not the actual thread_set_priority function. There is minimal difference in this. Our approach is a bit less user friendly as it requires the developer to lock and unlock before and after calling the thread_set_priority function, but that's how we ended up deciding to do it. If we ever need to change it, it's a very simple change.
+
 ---- RATIONALE ----
 
 >> B7: Why did you choose this design?  In what ways is it superior to
 >> another design you considered?
+
+We chose this design because we felt like it was the best way to turn a conceptual idea into a physical model and apply it. We figured that by getting something working first, we should try to do it the simplest way possible to make sure we understand the idea of priority donation correctly. Then, after we do that we can slowly improve it.
+
+In the end, we couldn't get the donation part working unfortunately.
 
 			  ADVANCED SCHEDULER
 			  ==================
